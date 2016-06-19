@@ -24,8 +24,8 @@ angular.module('ui.rCalendar', [])
 
         // Configuration attributes
         angular.forEach(['formatDay', 'formatDayHeader', 'formatDayTitle', 'formatWeekTitle', 'formatMonthTitle', 'formatWeekViewDayHeader', 'formatHourColumn',
-            'showEventDetail', 'startingDayMonth', 'startingDayWeek', 'allDayLabel', 'noEventsLabel', 'eventSource', 'queryMode', 'step'], function (key, index) {
-            self[key] = angular.isDefined($attrs[key]) ? (index < 12 ? $interpolate($attrs[key])($scope.$parent) : $scope.$parent.$eval($attrs[key])) : calendarConfig[key];
+            'allDayLabel', 'noEventsLabel', 'showEventDetail', 'eventSource', 'queryMode', 'step', 'startingDayMonth', 'startingDayWeek'], function (key, index) {
+            self[key] = angular.isDefined($attrs[key]) ? (index < 9 ? $interpolate($attrs[key])($scope.$parent) : $scope.$parent.$eval($attrs[key])) : calendarConfig[key];
         });
 
         self.hourParts = 1;
@@ -488,23 +488,34 @@ angular.module('ui.rCalendar', [])
 
                 scope.getHighlightClass = function (date) {
                     var className = '';
-                    if (date.selected) {
-                        className = 'monthview-selected';
-                    } else if (date.current) {
-                        className = 'monthview-current';
-                    } else if (date.hasEvent) {
+
+                    if (date.hasEvent) {
                         if (date.secondary) {
                             className = 'monthview-secondary-with-event';
                         } else {
                             className = 'monthview-primary-with-event';
                         }
                     }
+
+                    if (date.selected) {
+                        if (className) {
+                            className += ' ';
+                        }
+                        className += 'monthview-selected';
+                    }
+
+                    if (date.current) {
+                        if (className) {
+                            className += ' ';
+                        }
+                        className += 'monthview-current';
+                    }
+
                     if (date.secondary) {
                         if (className) {
-                            className += ' text-muted';
-                        } else {
-                            className = 'text-muted';
+                            className += ' ';
                         }
+                        className += 'text-muted';
                     }
                     return className;
                 };
@@ -930,8 +941,16 @@ angular.module('ui.rCalendar', [])
                         month = currentDate.getMonth(),
                         date = currentDate.getDate(),
                         day = currentDate.getDay(),
-                        firstDayOfWeek = new Date(year, month, date - day + ctrl.startingDayWeek),
-                        endTime = new Date(year, month, date - day + ctrl.startingDayWeek + 7);
+                        difference = day - ctrl.startingDayWeek,
+                        firstDayOfWeek,
+                        endTime;
+
+                    if (difference < 0) {
+                        difference += 7;
+                    }
+
+                    firstDayOfWeek = new Date(year, month, date - difference);
+                    endTime = new Date(year, month, date - difference + 7);
 
                     return {
                         startTime: firstDayOfWeek,
